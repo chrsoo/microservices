@@ -119,6 +119,8 @@ mvn clean package
 ```
 If you want to deploy the base image you need to configure Maven SCM settings and make sure to change the `docker.namespace` to you Docker Hub account. If you are using a private registry you also need to update the `docker.registry` property.
 
+You Microservices should use Dockerfile along the lines of [Dockerfile.microservice](Dockerfile.microservice) in the root of each Microservice repository branch.
+
 **(!) Note that the example requires Java 8 and Maven 3.5 to run!**
 
 ## Jenkinsfile
