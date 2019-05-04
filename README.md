@@ -5,6 +5,13 @@
 * [The Solution](#the-solution)
 * [Alternatives](#an-alternative)
 
+### TL;DR
+When using Jenkinsfile and Dockerfile with Microservices you are typically repeating the same boilerplate code over and over again. This becomes a problem when the number of Microservices - and Git branches - start to increase.
+
+In order to stay [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) you can leverage the `ONBUILD` Dockerfile keyword and a global var to define a re-usable pipeline.
+
+See the [Dockerfile](Dockerfile) and [Jenkinsfile](Jenkinsfile) in this project for an example on how that can be done!
+
 ## The Context
 Let's say you are using Microservices. Following best practices, each Microservice has its own source code repository. You start out with a few but this rapidly grows to a few dozen and with time you are managing a few hundred, perhaps more.
 
