@@ -1,5 +1,10 @@
 # How stay DRY using Dockerfile and Jenkinsfile with Microservices
 
+* [The Context](#the-context)
+* [The Problem](#the-problem)
+* [The Solution](#the-solution)
+* [Alternatives](#an-alternative)
+
 ## The Context
 Let's say you are using Microservices. Following best practices, each Microservice has its own source code repository. You start out with a few but this rapidly grows to a few dozen and with time you are managing a few hundred, perhaps more.
 
@@ -90,7 +95,9 @@ Please see [Dockerfile](Dockerfile) for a more complete example of how a custome
 ### Use a Jenkins pipeline DSL
 Jenkins has support for building custom [pipeline DSL](https://jenkins.io/doc/book/pipeline/syntax/) in Groovy.
 
-This can be quite complicated given that Jenkins Groovy flavour is not 100% vanilla and it has a sour twist - not all Groovy features are available and you need follow certain conventions. We will not go into details on how to develop a Pipeline DSL but the basic idea is that you define a global variable for the entire pipeline and use it your Jenkinsfiles.
+This can be quite complicated given that Jenkins Groovy flavour is not 100% vanilla and it has a sour twist - not all Groovy features are available and you need follow certain conventions. If you existing DSL that comes out of the box and avoid custom Groovy code you should be good though.
+
+Here we will not go into details on how to develop a Pipeline DSL but the basic idea is that you define a global variable for the entire pipeline and use it your Jenkinsfiles.
 
 Given a DSL library called `mylib` and a global var called `mavenPipeline` the Microservice `Jenkinsfile` could look like this:
 
@@ -157,9 +164,11 @@ It sets a few variables used for configuring the Microsevice and launches the mi
 
 A nifty feature is that it will pass along all docker command line arguments to the Java runtime.
 
-## Alternative Solutions
+## Alternatives
 There are of course other solutions that still respect the DRY principle.
 
 For example it might be possible to get rid of the Dockerfile. If you are building with Maven a good candidate is to use [JIB](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin).
 
-Instead of using Jenkinsfiles you may use custom Git repostory manager hooks to provision new pipelines for repositories and branches as needed.
+Instead of using Jenkinsfiles you may use custom Git repostory manager hooks to provision new pipelines for repositories and branches as needed. This seems like a rather cumbersome approach though.
+
+Looking into other CI/CD tools than Jenkins can also be a good idea given the challengeds in writing pipeline DSL in Groovy. Any feedback on good alternatives that stay DRY is welcome!
