@@ -60,7 +60,7 @@
                         </executions>
                         <configuration>
                             <repository>${docker.repository}</repository>
-                            <useMavenSettingsForAuth>false</useMavenSettingsForAuth>
+                            <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
                             <tag>${docker.tag}</tag>
                             <buildArgs>
                                 <JAR_FILE>microservice.jar</JAR_FILE>
