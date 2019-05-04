@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property scope="context" name="sys" value="${SYS:-UNKNOWN}" />
+    <property scope="context" name="app" value="${APP:-UNKNOWN}" />
+    <property scope="context" name="binary" value="${ARTIFACT_ID:-UNKNOWN}" />
+    <property scope="context" name="group" value="${GROUP_ID:-UNKNOWN}" />
+    <property scope="context" name="version" value="${VERSION:-UNKNOWN}" />
+
+    <property scope="local" name="log.level" value="${LOG_LEVEL:-INFO}" />
+    <property scope="local" name="appender" value="${LOG_FORMAT:-JSON}" />
+
+    <!-- Cf. https://github.com/logstash/logstash-logback-encoder -->
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>UTC</timeZone>
+            <fieldNames>
+                <!-- cf. #customizing-standard-field-names -->
+                <logger>category</logger>
+                <thread>thread</thread>
+                <level>level</level>
+                <stackTrace>trace</stackTrace>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <!-- Copy of the standard SpringBoot log format -->
+
+    <appender name="TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${log.level}">
+        <appender-ref ref="${appender}" />
+    </root>
+
+</configuration>
