@@ -1,1 +1,1 @@
-FROM 374a7a8f9491
+FROM hub.docker.com/changeme/docker-base-image:1.0.0-SNAPSHOT

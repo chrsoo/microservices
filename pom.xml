@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.example.docker</groupId>
-	<artifactId>docker-onbuild</artifactId>
+	<artifactId>docker-base-image</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
 	<description>Docker Base Image Example using ONBUILD</description>
@@ -13,18 +13,17 @@
         <docker.namespace>changeme</docker.namespace>
         <docker.name>${project.artifactId}</docker.name>
         <docker.repository>${docker.registry}/${docker.namespace}/${docker.name}</docker.repository>
+        <!-- the suffix is used to append an arbitrary string to the version, e.g. a build number or SCM tag -->
         <docker.version.suffix />
         <docker.tag>${project.version}${docker.version.suffix}</docker.tag>
         <docker.image>${docker.name}:${docker.tag}</docker.image>
-
         <dockerfile-maven-plugin.version>1.4.4</dockerfile-maven-plugin.version>
-
-        <dockerfile.build.pullNewerImage>true</dockerfile.build.pullNewerImage>
         <dockerfile.build.pullNewerImage>true</dockerfile.build.pullNewerImage>
 
         <exec.mainClass>com.example.docker.ChangeMe</exec.mainClass>
 
         <logback.version>1.2.3</logback.version>
+        <logstash-logback-encoder.version>5.3</logstash-logback-encoder.version>
 
         <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
     </properties>
@@ -112,6 +111,7 @@
 
     <build>
         <extensions>
+            <!-- enables dependency management between Maven docker projects -->
             <extension>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-extension</artifactId>
@@ -125,6 +125,11 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback-encoder.version}</version>
         </dependency>
     </dependencies>
 

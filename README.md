@@ -77,13 +77,11 @@ docker build --arg VERSION=1.3.9 .
 
 The resulting image will then contain the container label `version: 1.3.9` (surprise!).
 
-If the we want to change something, perahps adding another standard label, update the logic to the bootstrap script, change the log configuration or perhaps just update the to the latest alpine for Java, we only change it in one place, i.e. in the custom base image `mybase`.
+**If the we want to change something, perahps adding another standard label, update the logic to the bootstrap script, change the log configuration or perhaps just update the to the latest alpine for Java, we only change it in one place, i.e. in the custom base image `mybase`.**
 
 Of course, we still need to trigger the rebuild and redeployment of all our Microservices but the DRY principle is respected.
 
-The beauty of this approach is that we still have our `Dockerfile` in each Git repository which can be customized if there is a real need. Just because there is a default base image does not mean that we force everybody to use it all the time,.
-
-All our CI/CD tools will still work exactly the same and the only drawback is that we now have one exception to manage separately from the rest.
+The beauty of this approach is that we still have our `Dockerfile` in each Git repository which can be customized if there is a real need. Just because there is a default base image does not mean that we force everybody to use it all the time. All our CI/CD tools will still work exactly the same and the only drawback is that we now have one exception to manage separately from the rest.
 
 Please see [Dockerfile](Dockerfile) for a more complete example of how a custome base image can look like.
 
@@ -110,7 +108,7 @@ Similar to how we handle the `Dockerfile` we can manage a custom `Jenkinsfile` w
 This Git repository contains a more complete example of a custom base image. It assumes Java based Microservices built by Maven but the concept should be easily adaptable to any language or platform.
 
 * [pom.xml](pom.xml) for building the image
-* [bootstrap.sh](bootstrap.sh) for launching the microservice
+* [bootstrap.sh](bootstrap.sh) docker entrypoint for launching the microservice
 * [jmxremote.access](src/files/jmxremote.access) for configuring remote Java JMX access
 * [logback.xml](src/files/logback.xml) for log configuration
 
@@ -119,20 +117,33 @@ To build the base image you can launch
 ```
 mvn clean package
 ```
+If you want to deploy the base image you need to configure Maven SCM settings and make sure to change the `docker.namespace` to you Docker Hub account. If you are using a private registry you also need to update the `docker.registry` property.
 
-**(!) Note that the example requires Java 8 to run!**
+**(!) Note that the example requires Java 8 and Maven 3.5 to run!**
 
-To make the example work in a real project, the plugin configiuration should be extracted and added to a parent POM used by all Microservices. Or again, you will end up with a WET solution..
-
+## Jenkinsfile
 The [Jenkinsfile](Jenkinsfile) will not work without you writing a custom DSL and adding the `mavenPipeline` global variable to your Jenkins instance.
 
-## pom.xml
-The Maven POM builds the Docker image using Spotify's  [dockerfile-maven-plugin](https://github.com/spotify/dockerfile-maven). It will add the other base image files together with shared dependencies for all Microservices, in this case only the logback library.
+## POM
+The Maven POM builds the Docker image using Spotify's  [dockerfile-maven-plugin](https://github.com/spotify/dockerfile-maven).
 
-## bootstrap.sh
+The POM is configured to
+
+* Download all dependencies which are then added to the image
+* Create an executable JAR file which is also added to the image
+* Build the image if a Dockerfile is present using a Maven `docker` profile
+
+The base image pom.xml has two dependencies: the [logback-classic](https://logback.qos.ch/) and [logstash-logback-encoder](https://github.com/logstash/logstash-logback-encoder) libraries. These are shared by all our Microservices and are required for the  [logback.xml](src/files/logback.xml) configuration file.
+
+The configuration found in the POM can be used both for building the base image and for building the Microservices, indeed given the use of a Maven `docker` profile it can be used for any Maven project with or without Dockerfiles.
+
+In order to stay DRY the plugin configuration in the POM should be put in a parent pom shared by all Microservice projects. Or you will again end up with a WET solution...
+
+
+## Entrypoint
 The `bootstrap.sh` shell script that serves as the docker image entry point.
 
-It sets a few variables used for configuring the Microsevice and launches the microservice iteslf with a number of standard JVM arguments.
+It sets a few variables used for configuring the Microsevice and launches the microservice iteslf with a number of standard JVM arguments, including configuration of logback and JMX.
 
 A nifty feature is that it will pass along all docker command line arguments to the Java runtime.
 
