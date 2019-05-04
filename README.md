@@ -1,4 +1,4 @@
-# How to be DRY using Dockerfile and Jenkinsfile with Microservices
+# How stay DRY using Dockerfile and Jenkinsfile with Microservices
 
 ## The Context
 Let's say you are using Microservices. Following best practices, each Microservice has its own source code repository. You start out with a few but this rapidly grows to a few dozen and with time you are managing a few hundred, perhaps more.
@@ -36,7 +36,7 @@ Cheery-picking helps but still there is a lot of typing, committing and pushing 
 Of course, nothing prevents you from automating changes like this, but it would throwing code at a sympton instead of resolving the root cause.
 
 ## The solution
-A solution that addresses the (WET) root cause comes in two parts:
+A solution that addresses the WET root cause comes in two parts:
 
 * Use one (or more) custom base image in your Dockerfiles
 * Use a Jenkins pipeline DSL in your Jenkinsfiles
