@@ -1,7 +1,10 @@
+.DS_Store
+.project
+.classpath
+.settings
+.vscode
+
 *.log
-*.project
-*.classpath
-*.settings
-*.vscode
+
 bin
 target
