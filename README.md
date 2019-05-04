@@ -1,4 +1,6 @@
-# The Context
+# How to be DRY using Dockerfile and Jenkinsfile with Microservices
+
+## The Context
 Let's say you are using Microservices. Following best practices, each Microservice has its own source code repository. You start out with a few but this rapidly grows to a few dozen and with time you are managing a few hundred, perhaps more.
 
 Each Microservice is built as a Docker image which is deployed to a cluster using a Container Manager, perhaps Kubernetes. Having fully bought into the whole DevOps and automation concept you have CI/CD pipelines to build and deploy your Microservices.
@@ -22,7 +24,7 @@ Jenkinsfile
 
 In most cases these files are almost identical apart from label and environment values. In order to facilitate for developers these they are automaticallly generated using a template mechanism of some sorts. Perhaps the nifty [Docker Enterprise Desktop](https://blog.docker.com/2018/12/introducing-desktop-enterprise/) shipping as a part of Docker EE 3.0
 
-# The Problem
+## The Problem
 Requirements change or perhaps there is a bug but for whatever reason either the standard Jenkins pipeline and or Dockerfile change over time.
 
 With a large number of Microservices that each has its own version of the `Jenkinsfile` and `Dockerfile`, multiple branches for handling the master line, development, features and bugs the relevance of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) principle starts to sink in and you realize you have a [WET](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) solution...
@@ -33,13 +35,13 @@ Cheery-picking helps but still there is a lot of typing, committing and pushing 
 
 Of course, nothing prevents you from automating changes like this, but it would throwing code at a sympton instead of resolving the root cause.
 
-# The solution
+## The solution
 A solution that addresses the (WET) root cause comes in two parts:
 
 * Use one (or more) custom base image in your Dockerfiles
 * Use a Jenkins pipeline DSL in your Jenkinsfiles
 
-## Using a Custom Base Image
+### Using a Custom Base Image
 A custom base image should contain all things common to your downstream Microservices, things like
 
 * standard image labels
@@ -85,7 +87,7 @@ The beauty of this approach is that we still have our `Dockerfile` in each Git r
 
 Please see [Dockerfile](Dockerfile) for a more complete example of how a custome base image can look like.
 
-## Use a Jenkins pipeline DSL
+### Use a Jenkins pipeline DSL
 Jenkins has support for building custom [pipeline DSL](https://jenkins.io/doc/book/pipeline/syntax/) in Groovy.
 
 This can be quite complicated given that Jenkins Groovy flavour is not 100% vanilla and it has a sour twist - not all Groovy features are available and you need follow certain conventions. We will not go into details on how to develop a Pipeline DSL but the basic idea is that you define a global variable for the entire pipeline and use it your Jenkinsfiles.
@@ -104,7 +106,7 @@ Now, if there is a change to how the Microservice is built, how continous delive
 
 Similar to how we handle the `Dockerfile` we can manage a custom `Jenkinsfile` where needed.
 
-# The Example
+## The Example
 This Git repository contains a more complete example of a custom base image. It assumes Java based Microservices built by Maven but the concept should be easily adaptable to any language or platform.
 
 * [pom.xml](pom.xml) for building the image
@@ -117,16 +119,22 @@ To build the base image you can launch
 ```
 mvn clean package
 ```
-If you want to deploy the base image you need to configure Maven SCM settings and make sure to change the `docker.namespace` to you Docker Hub account. If you are using a private registry you also need to update the `docker.registry` property.
+If you want to deploy the base image you need to configure Maven SCM settings and make sure to change the `docker.namespace` to you Docker Hub account. If you are using a private registry you also need to update the `docker.registry` property and probably add credentials in Maven's `settings.xml` - YMMV!
+
+You can then run...
+```
+mvn clean package
+```
+... and Maven will happily deploy the (empty) JAR to your Maven registry and Docker image to Docker Hub or whatever you have configured.
 
 You Microservices should use Dockerfile along the lines of [Dockerfile.microservice](Dockerfile.microservice) in the root of each Microservice repository branch.
 
 **(!) Note that the example requires Java 8 and Maven 3.5 to run!**
 
-## Jenkinsfile
+### Jenkinsfile
 The [Jenkinsfile](Jenkinsfile) will not work without you writing a custom DSL and adding the `mavenPipeline` global variable to your Jenkins instance.
 
-## POM
+### POM
 The Maven POM builds the Docker image using Spotify's  [dockerfile-maven-plugin](https://github.com/spotify/dockerfile-maven).
 
 The POM is configured to
@@ -142,14 +150,14 @@ The configuration found in the POM can be used both for building the base image 
 In order to stay DRY the plugin configuration in the POM should be put in a parent pom shared by all Microservice projects. Or you will again end up with a WET solution...
 
 
-## Entrypoint
+### Entrypoint
 The `bootstrap.sh` shell script that serves as the docker image entry point.
 
 It sets a few variables used for configuring the Microsevice and launches the microservice iteslf with a number of standard JVM arguments, including configuration of logback and JMX.
 
 A nifty feature is that it will pass along all docker command line arguments to the Java runtime.
 
-# Alternative Solutions
+## Alternative Solutions
 There are of course other solutions that still respect the DRY principle.
 
 For example it might be possible to get rid of the Dockerfile. If you are building with Maven a good candidate is to use [JIB](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin).
