@@ -47,7 +47,7 @@ Cheery-picking helps but still there is a lot of typing, committing and pushing 
 
 Of course, nothing prevents you from automating changes like this, but it would throwing code at a sympton instead of resolving the root cause.
 
-## The solution
+## The Solution
 A solution that addresses the WET root cause comes in two parts:
 
 * Use one (or more) custom base image in your Dockerfiles
