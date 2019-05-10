@@ -1,10 +1,10 @@
 # How stay DRY using Dockerfile and Jenkinsfile with Microservices
 
 * [Context](#context)
-* [Problem](#problem)
-* [Solution](#solution)
+* [The Problem](#the_problem)
+* [A Solution](#a_solution)
 * [Example](#example)
-* [Alternatives](#an-alternative)
+* [Last Words](#last_words)
 
 ## TL;DR
 When using `Jenkinsfile` and `Dockerfile` with Microservices you are typically repeating the same boilerplate code over and over again. Initially this is not a problem but as the number of Microservices - and Git branches - start to increase it can become quite painful.
@@ -120,7 +120,7 @@ Jenkinsfile
 
 In most cases these files are almost identical apart from label and environment values. In order to facilitate for developers these they are automaticallly generated using a template mechanism of some sorts. Perhaps the nifty [Docker Enterprise Desktop](https://blog.docker.com/2018/12/introducing-desktop-enterprise/) shipping as a part of Docker EE 3.0
 
-## Problem
+## The Problem
 Requirements change or perhaps there is a bug but for whatever reason either the standard Jenkins pipeline and or Dockerfile change over time.
 
 With a large number of Microservices that each has its own version of the `Jenkinsfile` and `Dockerfile`, multiple branches for handling the master line, development, features and bugs the relevance of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) principle starts to sink in and you realize you have a [WET](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) solution...
@@ -131,7 +131,7 @@ Cheery-picking and merging helps but still there is a lot of typing, committing 
 
 Of course, nothing prevents you from automating changes like this, but it would throwing code at a sympton instead of resolving the root cause.
 
-## Solution
+## A Solution
 A solution that addresses the WET root cause comes in two parts:
 
 * Use a custom base image in your Dockerfiles
@@ -264,7 +264,7 @@ It sets a few variables used for configuring the Microsevice and launches the mi
 
 A nifty feature is that it will pass along all docker command line arguments to the Java runtime.
 
-## Alternatives
+## Last Words
 There are of course other solutions that still respect the DRY principle.
 
 For example it might be preferable to get rid of the Dockerfile altogether. If you are building with Maven a good candidate is to use [JIB](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin).
