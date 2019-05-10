@@ -9,7 +9,7 @@
 ## TL;DR
 When using `Jenkinsfile` and `Dockerfile` with Microservices you are typically repeating the same boilerplate code over and over again. Initially this is not a problem but as the number of Microservices - and Git branches - start to increase it can become quite painful.
 
-In order to stay [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) you can leverage the `ONBUILD` Dockerfile keyword in a custom base image and a [global var](FIXME) to define a reusable Jenkins pipeline.
+In order to stay [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) you can leverage the `ONBUILD` Dockerfile keyword in a custom base image and a [global var](FIXhttps://jenkins.io/doc/book/pipeline/shared-libraries/#defining-global-variablesME) to define a reusable Jenkins pipeline.
 
 With this solution each Microservice has a [Jenkinsfile](Jenkinsfile) similar to
 ```
@@ -28,17 +28,88 @@ Read the rest of the article if you are interested in the details or  if the abo
 ## Context
 Let's say you are using Microservices. Following best practices, each Microservice has its own source code repository. You start out with a few but this rapidly grows to a few dozen and with time you are managing a few hundred, perhaps more.
 
-Each Microservice is built as a Docker image which is deployed to a cluster using a Container Manager, perhaps Kubernetes. Having fully bought into the whole DevOps and automation concept you have CI/CD pipelines to build and deploy your Microservices.
+Each Microservice is built as a Docker image that defines a few labels, variables and some bootstrap code. A `Dockerfile` might look something like:
+
+    FROM openjdk:8-jdk-alpine
+
+    ENV SVC_HOME=/opt/microservice
+    ENV SVC_ETC=${SVC_HOME}/etc SVC_LIB=${SVC_HOME}/lib SVC_CACHE=/var/cache/microservice BOOTSTRAP=${SVC_HOME}/bootstrap.sh
+
+    RUN addgroup --system microservice \
+        && adduser --system --ingroup microservice --home $SVC_HOME microservice
+
+    ADD src/files ${SVC_ETC}/
+    ADD bootstrap.sh ${BOOTSTRAP}
+
+    RUN mkdir -p $SVC_LOG $SVC_CACHE $SVC_ETC \
+        && chown -R microservice:microservice $SVC_LOG $SVC_CACHE $SVC_HOME \
+        && chmod +x ${BOOTSTRAP}
+
+    USER microservice
+
+    ARG JAR_FILE
+
+    ARG ARTIFACT_ID
+    ARG GROUP_ID
+    ARG VERSION
+
+    LABEL org.label-schema.vendor="My Company" \
+        org.label-schema.name=$ARTIFACT_ID \
+        org.label-schema.description="Yet another Microservice" \
+        org.label-schema.usage="/README.md" \
+        org.label-schema.version=$VERSION \
+        org.label-schema.schema-version="1.0" \
+        java.version=${JAVA_VERSION} \
+        java.alpine.version=${JAVA_ALPINE_VERSION}
+
+    ENV \
+        ARTIFACT_ID=${ARTIFACT_ID} \
+        GROUP_ID=${GROUP_ID} \
+        VERSION=${VERSION} \
+        LOG_LEVEL=INFO \
+        CACHE_DIR=${SVC_CACHE}/${ARTIFACT_ID} \
+        ETC_DIR=${SVC_ETC}/${ARTIFACT_ID} \
+        MICROSERVICE=${SVC_HOME}/${JAR_FILE}
+
+    ADD target/lib ${SVC_LIB}/
+    ADD target/${JAR_FILE} ${MICROSERVICE}
+
+    # HTTP
+    ONBUILD EXPOSE 9000
+    # JMX
+    ONBUILD EXPOSE 8181
+
+    ONBUILD ENTRYPOINT ["/opt/microservice/bootstrap.sh"]
+
+Having fully bought into the whole DevOps and automation concept you have CI/CD pipelines to build and deploy your Microservices.
 
 Jenkins you use out of habit, because this is what you know or because it seems to be a very popular choice. Who really knows why, but Jenkins is what you are currently stuck with.
 
-Git is used for version control and the mere presence of a Jenkinsfile on a branch push to your Git repository manager triggers a build using the Jenkins multibranch plugin, this works great!
+Jenkins is configured to automatically detect new Git repositories and manage pipelines for each Git branch. A `Jenkinsfile` in your Git repository defines the steps for building a Microservice and pushing code automatically triggers the build.
 
-Once the initial Jenkinsfile is in place everything is automated.
-
-Typically your Microservices look pretty much alike from a CI/CD perspective but the simplest solution was to put the Dockerfile in each repository, just beside the Jenkinsfile.
-
-The Dockerfile is where you put all the Microservice specic stuff required for CI/CD and running your application such as container labels, environment variables etc.
+    pipeline {
+        agent docker
+        stage ('Build') {
+            steps {
+                ...
+            }
+        }
+        stage ('Test') {
+            steps {
+                ...
+            }
+        }
+        stage ('Verify') {
+            steps {
+                ...
+            }
+        }
+        stage ('Publish') {
+            steps {
+                ...
+            }
+        }
+    }
 
 Thus the Git repository root contains two boilerplate files, one for Docker and one for Jenkins:
 
@@ -63,8 +134,8 @@ Of course, nothing prevents you from automating changes like this, but it would 
 ## Solution
 A solution that addresses the WET root cause comes in two parts:
 
-* Use one (or more) custom base image in your Dockerfiles
-* Use a Jenkins pipeline DSL in your Jenkinsfiles
+* Use a custom base image in your Dockerfiles
+* Use pipeline DSL in your Jenkinsfiles
 
 ### Using a Custom Base Image
 A custom base image should contain all things common to your downstream Microservices, things like
@@ -114,19 +185,19 @@ If you find yourself making a lot of similar exceptions, refactoring of the base
 
 Please see [Dockerfile](Dockerfile) for a more complete example of how a custome base image can look like!
 
-### Use a Jenkins pipeline DSL
+### Use pipeline DSL in your Jenkinsfiles
 Jenkins has support for building custom [pipeline DSL](https://jenkins.io/doc/book/pipeline/syntax/) in Groovy.
 
-This can be quite complicated given that Jenkins Groovy flavour is not 100% vanilla and it has a sour twist - not all Groovy features are available and you need follow certain conventions. If you existing DSL that comes out of the box and avoid custom Groovy code you should be good though.
+This can be quite complicated given that Jenkins Groovy flavour is not 100% vanilla and it has a sour twist - not all Groovy features are available and you need follow certain conventions. If you stick to existing steps and very simple groovy code you should be good though.
 
 Here we will not go into details on how to develop a Pipeline DSL but the basic idea is that you define a global variable for the entire pipeline and use it your Jenkinsfiles.
 
-Given a DSL library called `mylib` and a [global var](FIXME) called `mavenPipeline` the Microservice `Jenkinsfile` could look like this:
+Given a DSL library called `mylib` and a [global var](https://jenkins.io/doc/book/pipeline/shared-libraries/#defining-global-variables) called `mavenPipeline` the Microservice `Jenkinsfile` could be as simple as this:
 
-```
-@Library("mylib@latest") _
-mavenPipeline(java: '8')
-```
+
+    @Library("mylib@latest") _
+    mavenPipeline(java: '8')
+
 *Note the trailing underscore which is a package placeholder to which the annotation is attached!*
 
 Here we assume that `mavenPipeline` has parameter support for the java version to use. You can have others as well, if you like, but be careful not to repeat too many boilerplate settings!
@@ -168,7 +239,7 @@ Your Microservices should use `Dockerfile` along the lines of [Dockerfile.micros
 ### Jenkinsfile
 The [Jenkinsfile](Jenkinsfile) will not work without you writing a custom DSL and adding the `mavenPipeline` global variable to your Jenkins instance.
 
-Using a `Jenkinsfile` works best with a plugin like [Bitbucket Multibranch](FIXME) or similar so that all new repositories and branchs are automagically discovered by Jenkins.
+Using a `Jenkinsfile` works best with a plugin like [Bitbucket Branch Source Plugin](https://go.cloudbees.com/docs/plugins/bitbucket/) or similar so that all new repositories and branchs are automagically discovered by Jenkins.
 
 ### POM
 The Maven POM builds the Docker image using Spotify's  [dockerfile-maven-plugin](https://github.com/spotify/dockerfile-maven).
