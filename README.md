@@ -3,7 +3,7 @@
 * [Context](#context)
 * [The Problem](#the_problem)
 * [A Solution](#a_solution)
-* [Example](#example)
+* [An Example](#example)
 * [Last Words](#last_words)
 
 ## TL;DR
