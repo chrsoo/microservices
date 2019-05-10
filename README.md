@@ -2,9 +2,9 @@
 
 * [Context](#context)
 * [The Problem](#the_problem)
-* [A Solution](#a_solution)
-* [An Example](#example)
-* [Last Words](#last_words)
+* [A Solution](#a-solution)
+* [An Example](#an-example)
+* [Last Words](#last-words)
 
 ## TL;DR
 When using `Jenkinsfile` and `Dockerfile` with Microservices you are typically repeating the same boilerplate code over and over again. Initially this is not a problem but as the number of Microservices - and Git branches - start to increase it can become quite painful.
@@ -206,7 +206,7 @@ Now, if there is a change to how the Microservice is built, how continous delive
 
 Similar to how we handle the `Dockerfile` we can manage a custom `Jenkinsfile` if needed.
 
-## Example
+## An Example
 This Git repository contains a more complete example of a custom base image. It assumes Java based Microservices built by Maven but the concept should be easily adaptable to any language or platform.
 
 * [pom.xml](pom.xml) for building the image
