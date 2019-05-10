@@ -1,7 +1,7 @@
 # How stay DRY using Dockerfile and Jenkinsfile with Microservices
 
 * [Context](#context)
-* [The Problem](#the_problem)
+* [The Problem](#the-problem)
 * [A Solution](#a-solution)
 * [An Example](#an-example)
 * [Last Words](#last-words)
