@@ -181,7 +181,7 @@ Of course, we still need to trigger the rebuild and redeployment of all our Micr
 
 The beauty of this approach is that we still have our `Dockerfile` in each Git repository which can be customized if there is a real need. Just because there is a default base image does not mean that we force everybody to use it all the time. All our CI/CD tools will still work exactly the same and the only drawback is that we now have one exception to manage separately from the rest.
 
-If you find yourself making a lot of similar exceptions, refactoring of the base image might be in place. Or perhaps there is a need for two different types of base images? In any case, try to Keep it as Simple and Stupid as possible.
+If you find yourself making a lot of similar exceptions, refactoring of the base image might be in place. Or perhaps there is a need for two different types of base images? In any case, try to keep it as simple and stupid as possible (cf. [KISS](https://en.wikipedia.org/wiki/KISS_principle)).
 
 Please see [Dockerfile](Dockerfile) for a more complete example of how a custome base image can look like!
 
@@ -193,7 +193,6 @@ This can be quite complicated given that Jenkins Groovy flavour is not 100% vani
 Here we will not go into details on how to develop a Pipeline DSL but the basic idea is that you define a global variable for the entire pipeline and use it your Jenkinsfiles.
 
 Given a DSL library called `mylib` and a [global var](https://jenkins.io/doc/book/pipeline/shared-libraries/#defining-global-variables) called `mavenPipeline` the Microservice `Jenkinsfile` could be as simple as this:
-
 
     @Library("mylib@latest") _
     mavenPipeline(java: '8')
@@ -269,8 +268,8 @@ There are of course other solutions that still respect the DRY principle.
 
 For example it might be preferable to get rid of the Dockerfile altogether. If you are building with Maven a good candidate is to use [JIB](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin).
 
-You could also get rid of the Jenkinsfile and implement autodicsovery yourself but this seems like a rather cumbersome approach though. I would opt for an out-of-the-box solution that provisions build pipelines automatically.
+You could also get rid of the Jenkinsfile and implement autodicsovery for Jenkins pipelines yourself but this seems like a rather cumbersome approach though. I would opt for an out-of-the-box solution that provisions build pipelines automatically.
 
-I am not aware of any alternaives that do not use a Jenkinsfile, so it may be a good reason to look beyond Jenkins. USing another tool also has the benefit of not having to deal with Jenkins flavour of Groovy...
+I am not aware of any alternaives that do not use a Jenkinsfile, so it may be a good reason to look beyond Jenkins. Using another tool also has the benefit of not having to deal with Jenkins flavour of Groovy...
 
 Any pointers on good alternatives that stay DRY for managing a large number of Git repositories and Dockerfiles are welcome!
