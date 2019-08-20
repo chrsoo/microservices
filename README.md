@@ -75,11 +75,11 @@ Each Microservice is built as a Docker image that defines a few labels, variable
     ADD target/${JAR_FILE} ${MICROSERVICE}
 
     # HTTP
-    ONBUILD EXPOSE 9000
+    EXPOSE 9000
     # JMX
-    ONBUILD EXPOSE 8181
+    EXPOSE 8181
 
-    ONBUILD ENTRYPOINT ["/opt/microservice/bootstrap.sh"]
+    ENTRYPOINT ["/opt/microservice/bootstrap.sh"]
 
 Having fully bought into the whole DevOps and automation concept you have CI/CD pipelines to build and deploy your Microservices.
 
