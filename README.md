@@ -1,4 +1,4 @@
-# How stay DRY doing Microservices
+# How to stay DRY doing Microservices
 
 * [Context](#context)
 * [The Problem](#the-problem)
